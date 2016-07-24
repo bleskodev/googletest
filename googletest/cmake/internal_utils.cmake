@@ -146,7 +146,12 @@ endmacro()
 function(cxx_library_with_type name type cxx_flags)
   # type can be either STATIC or SHARED to denote a static or shared library.
   # ARGN refers to additional arguments after 'cxx_flags'.
-  add_library(${name} ${type} ${ARGN})
+  if (${qibuild_FOUND})
+    qi_create_lib(${name} ${type} ${ARGN})
+    qi_stage_lib(${name})
+  else()
+    add_library(${name} ${type} ${ARGN})
+  endif()
   set_target_properties(${name}
     PROPERTIES
     COMPILE_FLAGS "${cxx_flags}")
@@ -156,7 +161,11 @@ function(cxx_library_with_type name type cxx_flags)
       COMPILE_DEFINITIONS "GTEST_CREATE_SHARED_LIBRARY=1")
   endif()
   if (CMAKE_USE_PTHREADS_INIT)
-    target_link_libraries(${name} ${CMAKE_THREAD_LIBS_INIT})
+    if (${qibuild_FOUND})
+      qi_use_lib(${name} PTHREAD)
+    else()
+      target_link_libraries(${name} ${CMAKE_THREAD_LIBS_INIT})
+    endif()
   endif()
 endfunction()
 
@@ -169,7 +178,11 @@ function(cxx_shared_library name cxx_flags)
 endfunction()
 
 function(cxx_library name cxx_flags)
-  cxx_library_with_type(${name} "" "${cxx_flags}" ${ARGN})
+  if (BUILD_SHARED_LIBS)
+    cxx_library_with_type(${name} "SHARED" "${cxx_flags}" ${ARGN})
+  else()
+    cxx_library_with_type(${name} "" "${cxx_flags}" ${ARGN})
+  endif()
 endfunction()
 
 # cxx_executable_with_flags(name cxx_flags libs srcs...)
@@ -177,7 +190,11 @@ endfunction()
 # creates a named C++ executable that depends on the given libraries and
 # is built from the given source files with the given compiler flags.
 function(cxx_executable_with_flags name cxx_flags libs)
-  add_executable(${name} ${ARGN})
+  if (${qibuild_FOUND})
+    qi_create_bin(${name} ${ARGN})
+  else()
+    add_executable(${name} ${ARGN})
+  endif()
   if (cxx_flags)
     set_target_properties(${name}
       PROPERTIES
@@ -190,9 +207,13 @@ function(cxx_executable_with_flags name cxx_flags libs)
   endif()
   # To support mixing linking in static and dynamic libraries, link each
   # library in with an extra call to target_link_libraries.
-  foreach (lib "${libs}")
-    target_link_libraries(${name} ${lib})
-  endforeach()
+  if (${qibuild_FOUND})
+    qi_use_lib(${name} ${libs})
+  else()
+    foreach (lib "${libs}")
+      target_link_libraries(${name} ${lib})
+    endforeach()
+  endif()
 endfunction()
 
 # cxx_executable(name dir lib srcs...)

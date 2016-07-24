@@ -89,7 +89,11 @@ endif()
 # aggressive about warnings.
 cxx_library(gtest "${cxx_strict}" src/gtest-all.cc)
 cxx_library(gtest_main "${cxx_strict}" src/gtest_main.cc)
-target_link_libraries(gtest_main gtest)
+if (${qibuild_FOUND})
+  qi_use_lib(gtest_main gtest)
+else()
+  target_link_libraries(gtest_main gtest)
+endif()
 
 # If the CMake version supports it, attach header directory information
 # to the targets for when we are part of a parent build (ie being pulled

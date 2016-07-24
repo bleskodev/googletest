@@ -1,0 +1,5 @@
+<project version="3">
+  <qibuild name="googletest">
+    <depends buildtime="true" runtime="true" names="pthread" />
+  </qibuild>
+</project>
