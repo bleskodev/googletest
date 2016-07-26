@@ -6,7 +6,7 @@ find_package(qibuild QUIET)
 # built as a static library (misses dependency to pthread).
 # Build as dynamic library until this problem is solved.
 if (${qibuild_FOUND})
-  set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 endif()
 
 enable_testing()
